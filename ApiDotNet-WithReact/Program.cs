@@ -1,5 +1,7 @@
+using ApiDotNet_WithReact.Context;
 using Microsoft.OpenApi.Models;
-
+using Microsoft.EntityFrameworkCore;
+  
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,6 +10,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "ApiDotNet_WithReact", Version = "v1" });
+});
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AppDbContext")); 
 });
 
 var app = builder.Build();
