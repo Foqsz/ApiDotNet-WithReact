@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ApiDotNet_WithReact</RootNamespace>
+  </PropertyGroup>
+
+<ItemGroup>
+  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
+  <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+	<PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="7.2.0" />
+</ItemGroup>    
+	
+
+</Project>

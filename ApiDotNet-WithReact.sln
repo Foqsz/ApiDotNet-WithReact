@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiDotNet-WithReact", "ApiDotNet-WithReact\ApiDotNet-WithReact.csproj", "{A3DE1290-C730-4067-8A0C-3D53E70C9FCD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A3DE1290-C730-4067-8A0C-3D53E70C9FCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3DE1290-C730-4067-8A0C-3D53E70C9FCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3DE1290-C730-4067-8A0C-3D53E70C9FCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3DE1290-C730-4067-8A0C-3D53E70C9FCD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
