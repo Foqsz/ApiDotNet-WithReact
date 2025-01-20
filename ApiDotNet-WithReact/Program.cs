@@ -1,7 +1,8 @@
 using ApiDotNet_WithReact.Context;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
-  
+using ApiDotNet_WithReact.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,8 +15,10 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")); 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddScoped<IAlunoService, AlunoService>();
 
 var app = builder.Build();
 
