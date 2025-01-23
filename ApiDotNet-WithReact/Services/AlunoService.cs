@@ -47,12 +47,16 @@ namespace ApiDotNet_WithReact.Services
 
         public async Task CreateAluno(Aluno aluno)
         {
+            await CheckEmailExist(aluno);
+
             await _context.Alunos.AddAsync(aluno);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAluno(Aluno aluno)
         {
+            await CheckEmailExist(aluno);
+
             _context.Entry(aluno).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
@@ -61,6 +65,16 @@ namespace ApiDotNet_WithReact.Services
         {
             _context.Alunos.Remove(aluno);
             await _context.SaveChangesAsync();
+        }
+
+        private async Task CheckEmailExist(Aluno aluno)
+        {
+            var alunoExiste = await _context.Alunos.FirstOrDefaultAsync(a => a.Email == aluno.Email);
+
+            if (alunoExiste != null)
+            {
+                throw new Exception("E-mail já cadastrado.");
+            }
         }
     }
 }
