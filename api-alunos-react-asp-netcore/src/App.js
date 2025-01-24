@@ -9,12 +9,12 @@ import logoCadastro from './assets/cadastro.png';
 function App() {
 
 // Define a URL base para a API
-const baseUrl = "https://localhost:7266/api/alunos";
+const baseUrl = "https://localhost:7266/api/alunos"; 
 
-// Define um estado para armazenar os dados recebidos da API
 const [data, setData] = useState([]);
-  
-// Define o estado inicial para 'alunoSelecionado' com propriedades vazias
+const [modalIncluir, setModalIncluir]=useState(false);
+const [modalEditar, setModalEditar]=useState(false);
+
 const [alunoSelecionado, setAlunoSelecionado] = useState({
   id: '',
   nome: '',
@@ -22,42 +22,39 @@ const [alunoSelecionado, setAlunoSelecionado] = useState({
   idade: ''
 });
 
-const [modalIncluir, setModalIncluir]=useState(false);
+const selecionarAluno = (aluno, opcao) => {
+  setAlunoSelecionado(aluno);
+  (opcao === "Editar") &&
+    abrirFecharModalEditar()
+}
 
 const abrirFecharModalIncluir=()=>{
   setModalIncluir(!modalIncluir);
 }
+  
+const abrirFecharModalEditar=()=>{
+  setModalEditar(!modalEditar);
+}
 
-// Função que lida com mudanças nos campos de entrada
-const handleChange = e => {
-  // Extrai o nome e valor do campo que disparou o evento
+const handleChange = e => { 
   const { name, value } = e.target;
-  
-  // Atualiza o estado 'alunoSelecionado' com o novo valor do campo correspondente
   setAlunoSelecionado({
-    ...alunoSelecionado, // Mantém os valores atuais das outras propriedades
-    [name]: value // Atualiza a propriedade correspondente ao nome do campo
+    ...alunoSelecionado,  
+    [name]: value 
   });
-  
-  // Loga o estado atualizado no console (pode não mostrar a atualização imediatamente devido à natureza assíncrona do setState)
   console.log(alunoSelecionado);
 }
 
-// Função assíncrona para fazer uma requisição GET à API
-const pedidoGet = async() => {
-  // Faz a requisição GET à API usando axios
+const pedidoGet = async() => { 
   await axios.get(baseUrl)
-    .then(response => {
-      // Se a requisição for bem-sucedida, armazena os dados recebidos no estado
+    .then(response => { 
       setData(response.data);
-    }).catch(error => {
-      // Se ocorrer um erro, exibe o erro no console
+    }).catch(error => { 
       console.log(error);
     });
 }
 
-const pedidoPost=async()=>{
-  // Faz a requisição POST à API usando axios
+const pedidoPost=async()=>{ 
   delete alunoSelecionado.id;
   alunoSelecionado.idade=parseInt(alunoSelecionado.idade);
   await axios.post(baseUrl,alunoSelecionado)
@@ -69,10 +66,31 @@ const pedidoPost=async()=>{
   })
 }
 
+const pedidoPut = async () => {
+  alunoSelecionado.idade = parseInt(alunoSelecionado.idade);  
+  await axios.put(baseUrl + "/" + alunoSelecionado.id, alunoSelecionado)
+    .then(response => {
+      var resposta = response.data;
+      var dadosAuxiliar = data;
+      dadosAuxiliar.map(aluno => {
+        if (aluno.id === alunoSelecionado.id) {
+          aluno.nome = resposta.nome;
+          aluno.email = resposta.email;
+          aluno.idade = resposta.idade;
+        }
+      });
+      abrirFecharModalEditar();
+    })
+    .catch(error => {
+      console.log(error);
+    });
+};
+
+
 // useEffect é usado para executar a função pedidoGet quando o componente é montado
 useEffect(() => {
   pedidoGet();
-}); // O array vazio [] significa que o efeito só será executado uma vez, após a montagem do componente
+}, []); // O array vazio [] significa que o efeito só será executado uma vez, após a montagem do componente
 
   return (
     <div className="App">
@@ -100,8 +118,8 @@ useEffect(() => {
               <td>{aluno.email}</td>
               <td>{aluno.idade}</td>
               <td>
-                <button className="btn btn-primary">Editar</button> {" "}
-                <button className="btn btn-danger">Excluir</button>
+                <button className="btn btn-primary" onClick={()=>selecionarAluno(aluno, "Editar")}>Editar</button> {" "}
+                <button className="btn btn-danger" onClick={()=>selecionarAluno(aluno, "Excluir")}>Excluir</button>
               </td>
             </tr>
           ))}
@@ -131,6 +149,33 @@ useEffect(() => {
           </ModalFooter>
         </Modal>
 
+        <Modal isOpen={modalEditar}>
+        <ModalHeader>Editar Aluno</ModalHeader>
+        <ModalBody>
+          <div className="form-group">
+            <label>ID: </label>
+            <br />
+            <input readOnly value={alunoSelecionado && alunoSelecionado.id} />
+            <br />
+            <label>Nome: </label>
+            <br />
+            <input type="text" className="form-control" name="nome" onChange={handleChange} 
+                    value={alunoSelecionado && alunoSelecionado.nome} />
+            <label>Email: </label>
+            <br />
+            <input type="text" className="form-control" name="email" onChange={handleChange} 
+                    value={alunoSelecionado && alunoSelecionado.email} />
+            <label>Idade: </label>
+            <br />
+            <input type="text" className="form-control" name="idade" onChange={handleChange} 
+                    value={alunoSelecionado && alunoSelecionado.idade} />
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <button className="btn btn-primary" onClick={()=>pedidoPut()}>Editar</button>{"  "}
+          <button className="btn btn-danger" onClick={()=>abrirFecharModalEditar()}>Cancelar</button>
+        </ModalFooter>
+      </Modal> 
     </div>
   );
 }
