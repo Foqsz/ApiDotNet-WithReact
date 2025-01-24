@@ -69,12 +69,13 @@ namespace ApiDotNet_WithReact.Services
 
         private async Task CheckEmailExist(Aluno aluno)
         {
-            var alunoExiste = await _context.Alunos.FirstOrDefaultAsync(a => a.Email == aluno.Email);
+            var alunoExiste = await _context.Alunos.FirstOrDefaultAsync(a => a.Email == aluno.Email && a.Id != aluno.Id);
 
             if (alunoExiste != null)
             {
                 throw new Exception("E-mail já cadastrado.");
             }
         }
+
     }
 }
