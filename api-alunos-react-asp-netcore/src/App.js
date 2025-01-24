@@ -14,6 +14,8 @@ const baseUrl = "https://localhost:7266/api/alunos";
 const [data, setData] = useState([]);
 const [modalIncluir, setModalIncluir]=useState(false);
 const [modalEditar, setModalEditar]=useState(false);
+const [modalExcluir, setModalExcluir] = useState(false);
+const [upateData, setUpdateData] = useState(true);
 
 const [alunoSelecionado, setAlunoSelecionado] = useState({
   id: '',
@@ -24,8 +26,8 @@ const [alunoSelecionado, setAlunoSelecionado] = useState({
 
 const selecionarAluno = (aluno, opcao) => {
   setAlunoSelecionado(aluno);
-  (opcao === "Editar") &&
-    abrirFecharModalEditar()
+  (opcao === "Editar") ?
+    abrirFecharModalEditar() : abrirFecharModalExcluir();
 }
 
 const abrirFecharModalIncluir=()=>{
@@ -34,6 +36,10 @@ const abrirFecharModalIncluir=()=>{
   
 const abrirFecharModalEditar=()=>{
   setModalEditar(!modalEditar);
+}
+
+const abrirFecharModalExcluir=()=>{
+  setModalExcluir(!modalExcluir);
 }
 
 const handleChange = e => { 
@@ -60,6 +66,7 @@ const pedidoPost=async()=>{
   await axios.post(baseUrl,alunoSelecionado)
   .then(response=>{
     setData(data.concat(response.data));
+    setUpdateData(true);
     abrirFecharModalIncluir();
   }).catch(error=>{
     console.log(error);
@@ -79,6 +86,7 @@ const pedidoPut = async () => {
           aluno.idade = resposta.idade;
         }
       });
+      setUpdateData(true);
       abrirFecharModalEditar();
     })
     .catch(error => {
@@ -86,11 +94,24 @@ const pedidoPut = async () => {
     });
 };
 
+const pedidoDelete=async()=>{
+  await axios.delete(baseUrl+"/"+alunoSelecionado.id) 
+  .then(response=>{
+    setData(data.filter(aluno=>aluno.id!==alunoSelecionado.id));
+    setUpdateData(true);
+    abrirFecharModalExcluir();
+  }).catch(error=>{
+    console.log(error);
+  })
+}
 
 // useEffect é usado para executar a função pedidoGet quando o componente é montado
 useEffect(() => {
-  pedidoGet();
-}, []); // O array vazio [] significa que o efeito só será executado uma vez, após a montagem do componente
+  if(upateData){
+    pedidoGet();
+    setUpdateData(false);
+  } 
+}, [upateData]);  
 
   return (
     <div className="App">
@@ -176,6 +197,17 @@ useEffect(() => {
           <button className="btn btn-danger" onClick={()=>abrirFecharModalEditar()}>Cancelar</button>
         </ModalFooter>
       </Modal> 
+
+      <Modal isOpen={modalExcluir}>
+        <ModalBody>
+          Confirmar a exclusão deste(a) aluno(a)?: <mark>{alunoSelecionado && alunoSelecionado.nome}</mark>?
+        </ModalBody>
+
+        <ModalFooter>
+          <button className="btn btn-danger" onClick={()=>pedidoDelete()}>Sim</button>
+          <button className="btn btn-secondary" onClick={()=>abrirFecharModalExcluir()}>Não</button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 }
