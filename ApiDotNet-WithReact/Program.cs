@@ -3,6 +3,9 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using ApiDotNet_WithReact.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,22 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true, // validando o emissor do token
+        ValidateAudience = true, // validando o receptor do token
+        ValidateLifetime = true, // validando o tempo de vida do token
+        ValidateIssuerSigningKey = true, // validando a chave de assinatura do token
+        ValidIssuer = builder.Configuration["Jwt:Issuer"], // emissor do token
+        ValidAudience = builder.Configuration["Jwt:Audience"], // receptor do token
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+}); 
+
+builder.Services.AddScoped<IAuthenticateService, AuthenticateService>();
 
 builder.Services.AddScoped<IAlunoService, AlunoService>();
 
@@ -51,6 +70,7 @@ app.UseCors("AllowLocalhost3000");
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
