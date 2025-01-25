@@ -2,6 +2,7 @@ using ApiDotNet_WithReact.Context;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using ApiDotNet_WithReact.Services;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IAlunoService, AlunoService>();
 
