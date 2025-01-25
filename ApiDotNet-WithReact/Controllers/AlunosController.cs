@@ -40,7 +40,7 @@ namespace ApiDotNet_WithReact.Controllers
 
             if (alunoByName == null || !alunoByName.Any())
             {
-                return StatusCode(StatusCodes.Status404NotFound);
+                return StatusCode(StatusCodes.Status404NotFound, $"Nenhum aluno(a) localizado com o nome={nome}.");
             }
 
             return StatusCode(StatusCodes.Status200OK, alunoByName);
@@ -55,7 +55,7 @@ namespace ApiDotNet_WithReact.Controllers
 
             if (alunoById == null)
             {
-                return StatusCode(StatusCodes.Status404NotFound);
+                return StatusCode(StatusCodes.Status404NotFound, $"Aluno com o id={id} não foi localizado.");
             }
 
             return StatusCode(StatusCodes.Status200OK, alunoById);
