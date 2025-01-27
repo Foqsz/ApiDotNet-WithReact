@@ -61,8 +61,36 @@ namespace ApiDotNet_WithReact.Controllers
                 ModelState.AddModelError("Login", "Login inválido");
                 return BadRequest(ModelState);
             }
-        }
+        } 
 
+        private ActionResult<UserToken> GenerateToken(LoginModel userInfo)
+        {
+            var claims = new[]
+            {
+                new Claim("email", userInfo.Email),
+                new Claim("meuToken", "foqsToken"),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var expiration = DateTime.UtcNow.AddMinutes(10);
+
+            JwtSecurityToken token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: expiration,
+                signingCredentials: creds
+            );
+
+            return new UserToken()
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                Expiration = expiration
+            };
         }
     }
 }
