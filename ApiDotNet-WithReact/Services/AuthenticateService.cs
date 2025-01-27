@@ -33,11 +33,12 @@ public class AuthenticateService : IAuthenticateService
             Email = email
         };
 
-        var result = await _signInManager.UserManager.CreateAsync(user, password);
+        var result = await _userManager.CreateAsync(user, password);
+
         if (result.Succeeded)
         {
             await _signInManager.SignInAsync(user, isPersistent: false);
-        }
+        } 
 
         return result.Succeeded;
     }
