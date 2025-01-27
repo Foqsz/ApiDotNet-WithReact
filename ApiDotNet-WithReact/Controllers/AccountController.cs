@@ -2,6 +2,10 @@
 using ApiDotNet_WithReact.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace ApiDotNet_WithReact.Controllers
 {
@@ -41,6 +45,24 @@ namespace ApiDotNet_WithReact.Controllers
                 ModelState.AddModelError("CreateUser", "Registro inválido");
                 return BadRequest(ModelState);
             }
+        }
+
+        [HttpPost("LoginUser")]
+        public async Task<ActionResult<UserToken>> Login([FromBody] LoginModel login)
+        {
+            var result = await _authenticateService.Authenticate(login.Email, login.Password);
+
+            if (result)
+            { 
+                return GenerateToken(login);
+            }
+            else
+            {
+                ModelState.AddModelError("Login", "Login inválido");
+                return BadRequest(ModelState);
+            }
+        }
+
         }
     }
 }
