@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Smooch+Sans:wght@100..900&display=swap');
+
+* {
+    margin: 5px;
+    padding: 5px;
+    outline: 5px;
+    box-sizing: border-box;
+}
+
+body {
+    font: 400 14px Smooch Sans, sans-serif;
+    background: #F0F0F5;
+    -webkit-font-smoothing: antialiased;
+}
