@@ -1,5 +1,7 @@
 ﻿using ApiDotNet_WithReact.Services;
 using ApiDotNet_WithReact.ViewModels;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -39,10 +41,10 @@ namespace ApiDotNet_WithReact.Controllers
             if (result)
             {
                 return Ok($"Usuário {register.Email} criado com sucesso");
-            }
+            } 
             else
             {
-                ModelState.AddModelError("CreateUser", "Registro inválido");
+                ModelState.AddModelError("CreateUser", "Registro inválido. Deve ter no mínimo 1 letra maiuscula.");
                 return BadRequest(ModelState);
             }
         }
@@ -58,7 +60,7 @@ namespace ApiDotNet_WithReact.Controllers
             }
             else
             {
-                ModelState.AddModelError("Login", "Login inválido");
+                ModelState.AddModelError("LoginUser", "Login inválido.");
                 return BadRequest(ModelState);
             }
         } 
