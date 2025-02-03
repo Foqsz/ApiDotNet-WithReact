@@ -13,7 +13,7 @@ export default function Alunos() {
                 <img class="logo" src={logoCadastro} alt="Cadastro"/>  
                 <span> Bem-Vindo, <strong>Foqs</strong>!</span>
                 <br></br>
-                <Link class="button" to="aluno/novo">Novo Aluno</Link>
+                <Link class="button" to="aluno/novo/0">Novo Aluno</Link>
                 <button class="buttonX" type="button">
                     <FiXCircle size={35} color="#17202a"/>
                 </button>
