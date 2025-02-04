@@ -30,7 +30,7 @@ export default function Login()
         }
         catch(error)
         {
-            alert('Falha no login, tente novamente.');
+            alert('Falha no login, tente novamente.' + error);
         }
     }
 
@@ -40,6 +40,7 @@ export default function Login()
                 <img src={logoImage} alt="login" id="img1" style={{ width: '150px', height: 'auto' }} />
                 <form onSubmit={login}>
                     <h1>Cadastro de Alunos</h1>
+                    <h2>Acesso restrito a funcionários.</h2>
 
                     <input placeholder="Email"
                         value={email}
