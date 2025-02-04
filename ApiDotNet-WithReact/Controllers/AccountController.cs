@@ -78,7 +78,7 @@ namespace ApiDotNet_WithReact.Controllers
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var expiration = DateTime.UtcNow.AddMinutes(10);
+            var expiration = DateTime.UtcNow.AddMinutes(30);
 
             JwtSecurityToken token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
