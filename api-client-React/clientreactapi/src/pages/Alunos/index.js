@@ -48,6 +48,19 @@ export default function Alunos() {
             alert('Erro ao realizar logout, tente novamente' + error);
         }
     }
+
+    async function editAluno(id)
+    {
+        try
+        {
+            history.push(`/aluno/novo/${id}`);
+        }
+        catch (error)
+        {
+            alert('Erro ao editar aluno, tente novamente' + error);
+        }
+    }
+
     return(
         <div className="alunos-container">
             <header>
@@ -73,7 +86,7 @@ export default function Alunos() {
                     <b>Email: </b>{aluno.email}<br></br>
                     <b>Idade: </b>{aluno.idade}<br></br>                 
 
-                    <button type="button">
+                    <button onClick={()=> editAluno(aluno.id)} type="button">
                         <FiEdit size="25" color="#17202a"/>
                     </button>
                     <button type="button">
