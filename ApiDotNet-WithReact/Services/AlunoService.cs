@@ -44,6 +44,7 @@ namespace ApiDotNet_WithReact.Services
 
         public async Task<Aluno> GetAluno(int id)
         {
+            System.Threading.Thread.Sleep(3000);
             var alunos = await _context.Alunos.FindAsync(id);
             return alunos;
         }
