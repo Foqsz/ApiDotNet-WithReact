@@ -62,13 +62,27 @@ namespace ApiDotNet_WithReact.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Aluno>>> GetAlunoByName(string nome)
         {
-            var alunoByName = await _alunoService.GetAlunosByName(nome);
+            var CacheCategoriaKey = $"CacheCategoria_{nome}";
 
-            if (alunoByName == null || !alunoByName.Any())
+            if (!_memoryCache.TryGetValue(CacheCategoriaKey, out IEnumerable<Aluno>? alunoByName))
             {
-                return StatusCode(StatusCodes.Status404NotFound, $"Nenhum aluno(a) localizado com o nome={nome}.");
-            }
+                alunoByName = await _alunoService.GetAlunosByName(nome);
 
+                if (alunoByName is not null)
+                {
+                    var cacheOptions = new MemoryCacheEntryOptions()
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
+                        SlidingExpiration = TimeSpan.FromSeconds(15),
+                        Priority = CacheItemPriority.High,
+                    };
+                    _memoryCache.Set(CacheCategoriaKey, alunoByName, cacheOptions); 
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status404NotFound, $"Nenhum aluno(a) localizado com o nome={nome}.");
+                }
+            }  
             return StatusCode(StatusCodes.Status200OK, alunoByName);
         }
         #endregion

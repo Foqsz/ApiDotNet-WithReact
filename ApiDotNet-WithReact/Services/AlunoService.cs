@@ -30,6 +30,7 @@ namespace ApiDotNet_WithReact.Services
 
         public async Task<IEnumerable<Aluno>> GetAlunosByName(string nome)
         {
+            System.Threading.Thread.Sleep(3000);
             IEnumerable<Aluno> alunos;
             if (!string.IsNullOrEmpty(nome))
             {
