@@ -16,7 +16,7 @@ namespace ApiDotNet_WithReact.Controllers
         #region Fields
         private readonly IAlunoService _alunoService;
         private readonly IMemoryCache _memoryCache;
-        private const string CacheCategoriasKey = "cacheAlunos";
+        private const string CacheAlunosKey = "cacheAlunos";
         #endregion
 
         #region Constructor
@@ -33,7 +33,7 @@ namespace ApiDotNet_WithReact.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Aluno>>> GetAlunos()
         {
-            if (!_memoryCache.TryGetValue(CacheCategoriasKey, out IEnumerable<Aluno>? alunos))
+            if (!_memoryCache.TryGetValue(CacheAlunosKey, out IEnumerable<Aluno>? alunos))
             {
                 alunos = await _alunoService.GetAlunos();
 
@@ -45,7 +45,7 @@ namespace ApiDotNet_WithReact.Controllers
                         SlidingExpiration = TimeSpan.FromSeconds(15),
                         Priority = CacheItemPriority.High,
                     };
-                    _memoryCache.Set(CacheCategoriasKey, alunos, cacheOptions);
+                    _memoryCache.Set(CacheAlunosKey, alunos, cacheOptions);
                 }
                 else
                 {
@@ -62,9 +62,9 @@ namespace ApiDotNet_WithReact.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Aluno>>> GetAlunoByName(string nome)
         {
-            var CacheCategoriaKey = $"CacheCategoria_{nome}";
+            var CacheAlunoKey = $"CacheAluno_{nome}";
 
-            if (!_memoryCache.TryGetValue(CacheCategoriaKey, out IEnumerable<Aluno>? alunoByName))
+            if (!_memoryCache.TryGetValue(CacheAlunoKey, out IEnumerable<Aluno>? alunoByName))
             {
                 alunoByName = await _alunoService.GetAlunosByName(nome);
 
@@ -76,7 +76,7 @@ namespace ApiDotNet_WithReact.Controllers
                         SlidingExpiration = TimeSpan.FromSeconds(15),
                         Priority = CacheItemPriority.High,
                     };
-                    _memoryCache.Set(CacheCategoriaKey, alunoByName, cacheOptions); 
+                    _memoryCache.Set(CacheAlunoKey, alunoByName, cacheOptions); 
                 }
                 else
                 {
@@ -93,9 +93,9 @@ namespace ApiDotNet_WithReact.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Aluno>> GetAlunoById(int id)
         {
-            var CacheCategoriaKey = $"CacheCategoria_{id}";
+            var CacheAlunoKey = $"CacheAluno_{id}";
 
-            if (!_memoryCache.TryGetValue(CacheCategoriaKey, out Aluno? alunoById))
+            if (!_memoryCache.TryGetValue(CacheAlunoKey, out Aluno? alunoById))
             {
                 alunoById = await _alunoService.GetAluno(id);
 
@@ -107,7 +107,7 @@ namespace ApiDotNet_WithReact.Controllers
                         SlidingExpiration = TimeSpan.FromSeconds(15),
                         Priority = CacheItemPriority.High,
                     };
-                    _memoryCache.Set(CacheCategoriaKey, alunoById, cacheOptions);
+                    _memoryCache.Set(CacheAlunoKey, alunoById, cacheOptions);
                 }
                 else
                 {
@@ -130,6 +130,11 @@ namespace ApiDotNet_WithReact.Controllers
             }
 
             await _alunoService.CreateAluno(aluno);
+
+            _memoryCache.Remove(CacheAlunosKey);
+
+
+
             return StatusCode(StatusCodes.Status201Created, aluno);
         }
         #endregion
