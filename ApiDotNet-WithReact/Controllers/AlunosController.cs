@@ -76,13 +76,13 @@ namespace ApiDotNet_WithReact.Controllers
                         SlidingExpiration = TimeSpan.FromSeconds(15),
                         Priority = CacheItemPriority.High,
                     };
-                    _memoryCache.Set(CacheAlunoKey, alunoByName, cacheOptions); 
+                    _memoryCache.Set(CacheAlunoKey, alunoByName, cacheOptions);
                 }
                 else
                 {
                     return StatusCode(StatusCodes.Status404NotFound, $"Nenhum aluno(a) localizado com o nome={nome}.");
                 }
-            }  
+            }
             return StatusCode(StatusCodes.Status200OK, alunoByName);
         }
         #endregion
@@ -129,11 +129,20 @@ namespace ApiDotNet_WithReact.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest);
             }
 
-            await _alunoService.CreateAluno(aluno);
+            var alunoCreate = _alunoService.CreateAluno(aluno);
 
             _memoryCache.Remove(CacheAlunosKey);
 
+            var cacheKey = $"CacheAluno_{alunoCreate.Id}";
 
+            var cacheOptions = new MemoryCacheEntryOptions()
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
+                SlidingExpiration = TimeSpan.FromSeconds(15),
+                Priority = CacheItemPriority.High,
+            };
+
+            await _memoryCache.Set(cacheKey, alunoCreate, cacheOptions);
 
             return StatusCode(StatusCodes.Status201Created, aluno);
         }
