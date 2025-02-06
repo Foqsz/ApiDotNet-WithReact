@@ -37,20 +37,12 @@ public class AlunosController : ControllerBase
         {
             alunos = await _alunoService.GetAlunos();
 
-            if (alunos is not null && alunos.Any())
-            {
-                var cacheOptions = new MemoryCacheEntryOptions()
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
-                    SlidingExpiration = TimeSpan.FromSeconds(15),
-                    Priority = CacheItemPriority.High,
-                };
-                _memoryCache.Set(CacheAlunosKey, alunos, cacheOptions);
-            }
-            else
+            if (alunos is null || !alunos.Any())
             {
                 return StatusCode(StatusCodes.Status404NotFound);
             }
+
+            SetCache(CacheAlunosKey, alunos);
         }
         return StatusCode(StatusCodes.Status200OK, alunos);
     }
@@ -62,26 +54,18 @@ public class AlunosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<Aluno>>> GetAlunoByName(string nome)
     {
-        var CacheAlunoKey = $"CacheAluno_{nome}";
+        var CacheAlunoKey = GetAlunosCacheKeyName(nome);
 
         if (!_memoryCache.TryGetValue(CacheAlunoKey, out IEnumerable<Aluno>? alunoByName))
         {
             alunoByName = await _alunoService.GetAlunosByName(nome);
 
-            if (alunoByName is not null)
-            {
-                var cacheOptions = new MemoryCacheEntryOptions()
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
-                    SlidingExpiration = TimeSpan.FromSeconds(15),
-                    Priority = CacheItemPriority.High,
-                };
-                _memoryCache.Set(CacheAlunoKey, alunoByName, cacheOptions);
-            }
-            else
+            if (alunoByName is null)
             {
                 return StatusCode(StatusCodes.Status404NotFound, $"Nenhum aluno(a) localizado com o nome={nome}.");
             }
+
+            SetCache(CacheAlunoKey, alunoByName);
         }
         return StatusCode(StatusCodes.Status200OK, alunoByName);
     }
@@ -93,26 +77,18 @@ public class AlunosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Aluno>> GetAlunoById(int id)
     {
-        var CacheAlunoKey = $"CacheAluno_{id}";
+        var CacheAlunoKey = GetAlunosCacheKey(id);
 
         if (!_memoryCache.TryGetValue(CacheAlunoKey, out Aluno? alunoById))
         {
             alunoById = await _alunoService.GetAluno(id);
 
-            if (alunoById is not null)
-            {
-                var cacheOptions = new MemoryCacheEntryOptions()
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
-                    SlidingExpiration = TimeSpan.FromSeconds(15),
-                    Priority = CacheItemPriority.High,
-                };
-                _memoryCache.Set(CacheAlunoKey, alunoById, cacheOptions);
-            }
-            else
+            if (alunoById is null)
             {
                 return StatusCode(StatusCodes.Status404NotFound, $"Aluno com o id={id} não foi localizado.");
             }
+
+            SetCache(CacheAlunoKey, alunoById);
         }
         return StatusCode(StatusCodes.Status200OK, alunoById);
     }
@@ -124,25 +100,14 @@ public class AlunosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<Aluno>> CreateAluno(Aluno aluno)
     {
-        if (aluno == null)
+        if (aluno is null)
         {
-            return StatusCode(StatusCodes.Status400BadRequest);
+            return StatusCode(StatusCodes.Status400BadRequest, "Dados inválidos");
         }
 
-        var alunoCreate = _alunoService.CreateAluno(aluno);
+        await _alunoService.CreateAluno(aluno);
 
-        _memoryCache.Remove(CacheAlunosKey);
-
-        var cacheKey = $"CacheAluno_{alunoCreate.Id}";
-
-        var cacheOptions = new MemoryCacheEntryOptions()
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
-            SlidingExpiration = TimeSpan.FromSeconds(15),
-            Priority = CacheItemPriority.High,
-        };
-
-        await _memoryCache.Set(cacheKey, alunoCreate, cacheOptions);
+        InvalidateCacheAfterChange(aluno.Id, aluno);
 
         return StatusCode(StatusCodes.Status201Created, aluno);
     }
@@ -152,31 +117,32 @@ public class AlunosController : ControllerBase
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Aluno>> PutAluno(int id, [FromBody] Aluno aluno)
     {
+        if (aluno == null)
+        {
+            return StatusCode(StatusCodes.Status400BadRequest, "Dados inválidos.");
+        }
+
         if (id != aluno.Id)
         {
             return StatusCode(StatusCodes.Status400BadRequest, "Id do aluno não corresponde.");
         }
 
-        if (aluno == null)
+        var existingAluno = await _alunoService.GetAluno(id);
+        if (existingAluno == null)
         {
-            return StatusCode(StatusCodes.Status400BadRequest, "Não pode ser nulo.");
+            return StatusCode(StatusCodes.Status404NotFound, $"Aluno com id={id} não foi localizado.");
         }
 
-        var alunoAtualizado = _alunoService.UpdateAluno(aluno);
+        await _alunoService.UpdateAluno(aluno);
 
-        await _memoryCache.Set($"CacheAluno_{id}", alunoAtualizado, new MemoryCacheEntryOptions()
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
-            SlidingExpiration = TimeSpan.FromSeconds(15),
-            Priority = CacheItemPriority.High,
-        });
+        InvalidateCacheAfterChange(id, aluno);
 
-        _memoryCache.Remove(CacheAlunosKey);
-
-        return StatusCode(StatusCodes.Status200OK, alunoAtualizado);
+        return StatusCode(StatusCodes.Status200OK, aluno);
     }
+
     #endregion
 
     #region DeleteAluno
@@ -192,16 +158,17 @@ public class AlunosController : ControllerBase
             return StatusCode(StatusCodes.Status404NotFound, $"Aluno com id= {id} não localizado.");
         }
 
-        var alunoExcluido = _alunoService.DeleteAluno(buscarAluno);
+        await _alunoService.DeleteAluno(buscarAluno);
 
-        _memoryCache.Remove($"CacheAluno_{id}");
-        _memoryCache.Remove(CacheAlunosKey);
+        InvalidateCacheAfterChange(id);
 
-        return StatusCode(StatusCodes.Status200OK, "Aluno deletado com sucesso.");
+        return StatusCode(StatusCodes.Status200OK, $"Aluno deletado com sucesso.");
     }
     #endregion
 
     private string GetAlunosCacheKey(int id) => $"CacheAluno_{id}";
+
+    private string GetAlunosCacheKeyName(string nome) => $"CacheAluno_{nome}";
 
     private void SetCache<T>(string key, T data)
     {

@@ -62,9 +62,14 @@ namespace ApiDotNet_WithReact.Services
         {
             await CheckEmailExist(aluno);
 
-            _context.Entry(aluno).State = EntityState.Modified;
+            var existingAluno = await _context.Alunos.FindAsync(aluno.Id);
+            if (existingAluno != null)
+            {
+                _context.Entry(existingAluno).CurrentValues.SetValues(aluno);
+            }
+
             await _context.SaveChangesAsync();
-        }
+        } 
 
         public async Task DeleteAluno(Aluno aluno)
         {
