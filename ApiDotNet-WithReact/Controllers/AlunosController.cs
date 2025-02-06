@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ApiDotNet_WithReact.Controllers
 {
@@ -13,10 +14,13 @@ namespace ApiDotNet_WithReact.Controllers
     public class AlunosController : ControllerBase
     {
         private readonly IAlunoService _alunoService;
+        private readonly IMemoryCache _memoryCache;
+        private const string CacheCategoriasKey = "cacheAlunos";
 
-        public AlunosController(IAlunoService alunoService)
+        public AlunosController(IAlunoService alunoService, IMemoryCache memoryCache)
         {
             _alunoService = alunoService;
+            _memoryCache = memoryCache;
         }
 
         [HttpGet]
@@ -24,13 +28,25 @@ namespace ApiDotNet_WithReact.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Aluno>>> GetAlunos()
         {
-            var alunos = await _alunoService.GetAlunos();
-
-            if (alunos == null)
+            if (!_memoryCache.TryGetValue(CacheCategoriasKey, out IEnumerable<Aluno>? alunos)) //localizando no cache, se eu encontrar, armazeno na variavel Aluno
             {
-                return StatusCode(StatusCodes.Status404NotFound);
-            }
+                alunos = await _alunoService.GetAlunos();
 
+                if (alunos is not null && alunos.Any())
+                {
+                    var cacheOptions = new MemoryCacheEntryOptions()
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
+                        SlidingExpiration = TimeSpan.FromSeconds(15),
+                        Priority = CacheItemPriority.High,
+                    };
+                    _memoryCache.Set(CacheCategoriasKey, alunos, cacheOptions);
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status404NotFound);
+                }
+            }
             return StatusCode(StatusCodes.Status200OK, alunos);
         }
 
