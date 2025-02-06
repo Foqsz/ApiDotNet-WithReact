@@ -164,9 +164,18 @@ namespace ApiDotNet_WithReact.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest, "Não pode ser nulo.");
             }
 
-            await _alunoService.UpdateAluno(aluno);
+            var alunoAtualizado = _alunoService.UpdateAluno(aluno);
 
-            return StatusCode(StatusCodes.Status200OK, aluno);
+            await _memoryCache.Set($"CacheAluno_{id}", alunoAtualizado, new MemoryCacheEntryOptions()
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
+                SlidingExpiration = TimeSpan.FromSeconds(15),
+                Priority = CacheItemPriority.High,
+            });
+
+            _memoryCache.Remove(CacheAlunosKey);
+
+            return StatusCode(StatusCodes.Status200OK, alunoAtualizado);
         }
         #endregion
 
