@@ -192,7 +192,11 @@ namespace ApiDotNet_WithReact.Controllers
                 return StatusCode(StatusCodes.Status404NotFound, $"Aluno com id= {id} não localizado.");
             }
 
-            await _alunoService.DeleteAluno(buscarAluno);
+            var alunoExcluido =  _alunoService.DeleteAluno(buscarAluno);
+
+            _memoryCache.Remove($"CacheAluno_{id}");
+            _memoryCache.Remove(CacheAlunosKey);
+
             return StatusCode(StatusCodes.Status200OK, "Aluno deletado com sucesso.");
         }
         #endregion
