@@ -17,6 +17,9 @@ namespace ApiDotNet_WithReact.Services
         {
             try
             {
+                //delay de 3s
+                //é assincrono e bloqueia a thread
+                System.Threading.Thread.Sleep(3000);
                 return await _context.Alunos.ToListAsync();
             }
             catch
